@@ -11,6 +11,7 @@ everything else is fixed (store, llm and 'config.py' stated values).
 from __future__ import annotations
 
 import logging
+import random
 
 from src.config import RAGConfig
 from src.llm import LLMClient
@@ -42,6 +43,17 @@ class RAGEngine:
         self._strategy = strategy
         self._config = config
 
+        # Seeded RNG to de-bias document ORDER in the prompt (see answer()).
+        # Created ONCE here — not per query — so its state advances across calls.
+        # A fresh Random(seed) inside answer() would re-seed identically every
+        # call and therefore produce the SAME permutation for every same-length
+        # doc list, merely flipping the primacy bias instead of removing it.
+        # One RNG per engine gives varied-but-reproducible orderings, and since
+        # both experimental arms build their engine with the same seed and iterate
+        # queries in the same order, document order is held IDENTICAL across the
+        # baseline/epistemic conditions — so order is not a confound between them.
+        self._rng = random.Random(config.seed)
+
     # Public API
 
     def answer(self, entity_id: str, question: str) -> QueryResult:
@@ -65,6 +77,14 @@ class RAGEngine:
             entity_id, initial_context.documents
         )
             #_ensure_conflict_pair() is defined later in this module
+
+        # Stage 2b — de-bias document ORDER. ChromaDB systematically returns the
+        # healthy (-H) doc before the poisoned (-P) one, and a greedy LLM tends to
+        # adopt the FIRST answer it reads (primacy / position bias) — which inflated
+        # baseline accuracy to ~100%. Shuffle with the engine's seeded RNG so the
+        # ordering is reproducible yet no longer privileges one side of the conflict.
+        self._rng.shuffle(final_docs)
+
         final_context = RetrievedContext(query=question, documents=final_docs)
 
         logger.debug(

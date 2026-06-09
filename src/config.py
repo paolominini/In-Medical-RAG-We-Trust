@@ -23,7 +23,7 @@ class RAGConfig:
     embed_id: str = "sentence-transformers/all-MiniLM-L6-v2"
 
     # Retrieval & generation knobs 
-    top_k: int = 4 # documents retrieved per query
+    top_k: int = 2 # documents retrieved per query
     max_new_tokens: int = 256 # cap on generation length
 
     # Reproducibility 
