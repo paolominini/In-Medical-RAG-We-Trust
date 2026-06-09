@@ -103,5 +103,10 @@ class EvalRecord:
     ground_truth_hit: bool   # a keyword related to the truth was found in the answer
     poison_hit: bool  # a poisonous keyword was found in the answer
     lexicon_hit: bool   # a conflict-lexicon phrase was found (robustness cross-check)
-    conflict_detected: bool 
+    conflict_detected: bool
     parse_failed: bool  # both coming from Generation Output too
+
+    # Pipeline side-fact carried over from QueryResult so that compute_metrics()
+    # can report Retrieval Recall (pair) from EvalRecords alone.
+    # True if semantic search surfaced both conflict docs before any injection.
+    retrieval_complete: bool = True
