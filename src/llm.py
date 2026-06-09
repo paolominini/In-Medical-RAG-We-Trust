@@ -76,4 +76,32 @@ class LLMClient:
 
         # Isolate the newly generated token sequence from the contextual prompt.
         new_token_ids = output_ids[0, n_prompt_tokens:]
-        return self._tokenizer.decode(new_token_ids, skip_special_tokens=True).strip()
+        decoded = self._tokenizer.decode(new_token_ids, skip_special_tokens=True).strip()
+        return self._strip_code_fence(decoded)
+
+    @staticmethod
+    def _strip_code_fence(text: str) -> str:
+        """
+        Peel a surrounding Markdown code fence (```json ... ``` or ``` ... ```)
+        if the model added one despite being told not to.
+
+        This is output NORMALISATION, not JSON repair: we only remove a known
+        wrapper, leaving the inner content untouched for the single binary
+        json.loads() in PromptStrategy.parse_output(). The 1.5B model frequently
+        fences its JSON, which would otherwise inflate the parse-failure rate and
+        silently drop genuine conflict flags from the Epistemic arm.
+        """
+        s = text.strip()
+        if not s.startswith("```"):
+            return s
+
+        # Remove the opening fence line (``` possibly followed by a lang tag).
+        newline = s.find("\n")
+        if newline == -1:
+            return s  # malformed single-line fence — leave it (counts as parse fail)
+        s = s[newline + 1:]
+
+        # Remove the closing fence if present.
+        if s.rstrip().endswith("```"):
+            s = s.rstrip()[:-3]
+        return s.strip()
