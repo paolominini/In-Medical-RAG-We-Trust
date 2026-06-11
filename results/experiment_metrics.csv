@@ -1,3 +1,3 @@
 strategy_name,n,correct,poisoned,flagged,other,factual_accuracy,poison_adoption_rate,flag_rate,conflict_detection_rate,other_rate,parse_failure_rate,retrieval_recall_pair
 baseline,100,41,59,0,0,0.41,0.59,0.0,0.0,0.0,0.0,1.0
-epistemic_verification,100,43,46,11,0,0.43,0.46,0.11,0.11,0.0,0.0,1.0
+epistemic_verification,100,40,46,14,0,0.4,0.46,0.14,0.11,0.0,0.0,1.0

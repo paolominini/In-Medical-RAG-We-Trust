@@ -1,7 +1,14 @@
+# environments
 .venv/
-*.md
 __pycache__/
 *.pyc
-data/chroma
+
+# DB
+data/chroma/
+
+# Log and others
 *.log
+run_log.txt
+.DS_Store
+*.md
 
