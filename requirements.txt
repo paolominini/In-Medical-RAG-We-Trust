@@ -5,3 +5,5 @@ sentence-transformers
 chromadb
 pandas
 matplotlib
+seaborn
+jupyter
